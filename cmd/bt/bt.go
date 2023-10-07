@@ -297,6 +297,7 @@ func main() {
 				fmt.Printf("VOC: %d\n", voc)
 			} else {
 				type Data struct {
+					Timestamp   int64   `json:"timestamp"`
 					Serial      string  `json:"serial"`
 					Humidity    float32 `json:"humidity"`
 					RadonShort  int     `json:"radon_short"`
@@ -307,6 +308,7 @@ func main() {
 					VOC         int     `json:"voc"`
 				}
 				data := Data{
+					Timestamp:   time.Now().Unix(),
 					Serial:      model + serial,
 					Humidity:    float32(humid) / 2.0,
 					RadonShort:  int(radonShort),
