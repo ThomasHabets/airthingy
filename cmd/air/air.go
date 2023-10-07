@@ -22,10 +22,10 @@ Example commands:
 
 import (
 	"context"
-	"net/http"
-	"fmt"
 	"flag"
+	"fmt"
 	"io"
+	"net/http"
 	"os"
 
 	log "github.com/sirupsen/logrus"
@@ -34,7 +34,7 @@ import (
 
 var (
 	// TODO: move to envs.
-	clientID = flag.String("client_id", "", "OAuth client ID")
+	clientID     = flag.String("client_id", "", "OAuth client ID")
 	clientSecret = flag.String("client_secret", "", "OAuth client secret")
 )
 
@@ -56,7 +56,7 @@ func handleList(ctx context.Context, client *http.Client, args []string) error {
 	return nil
 }
 
-func handleDevice(ctx context.Context, client *http.Client, ids []string) error{
+func handleDevice(ctx context.Context, client *http.Client, ids []string) error {
 	for _, id := range ids {
 		res, err := client.Get("https://ext-api.airthings.com/v1/devices/" + id)
 		if err != nil {
@@ -65,15 +65,15 @@ func handleDevice(ctx context.Context, client *http.Client, ids []string) error{
 		if res.StatusCode != http.StatusOK {
 			return fmt.Errorf("status not OK for device %q: %v", id, res.Status)
 		}
-		if _, err := io.Copy(os.Stdout, res.Body);err != nil {
-			return fmt.Errorf("failed to get device data for device id %q: %v",id, err)
+		if _, err := io.Copy(os.Stdout, res.Body); err != nil {
+			return fmt.Errorf("failed to get device data for device id %q: %v", id, err)
 		}
 		fmt.Println()
 	}
 	return nil
 }
 
-func handleLatest(ctx context.Context, client *http.Client, ids []string) error{
+func handleLatest(ctx context.Context, client *http.Client, ids []string) error {
 	for _, id := range ids {
 		res, err := client.Get("https://ext-api.airthings.com/v1/devices/" + id + "/latest-samples")
 		if err != nil {
@@ -82,8 +82,8 @@ func handleLatest(ctx context.Context, client *http.Client, ids []string) error{
 		if res.StatusCode != http.StatusOK {
 			return fmt.Errorf("status not OK for device %q: %v", id, res.Status)
 		}
-		if _, err := io.Copy(os.Stdout, res.Body);err != nil {
-			return fmt.Errorf("failed to get latest samples for device id %q: %v",id, err)
+		if _, err := io.Copy(os.Stdout, res.Body); err != nil {
+			return fmt.Errorf("failed to get latest samples for device id %q: %v", id, err)
 		}
 		fmt.Println()
 	}
@@ -103,15 +103,15 @@ func main() {
 	}
 	client := conf.Client(ctx)
 
-	h, ok := map[string]func(context.Context, *http.Client, []string)error{
-		"list": handleList,
-		"dev": handleDevice,
+	h, ok := map[string]func(context.Context, *http.Client, []string) error{
+		"list":   handleList,
+		"dev":    handleDevice,
 		"latest": handleLatest,
 	}[flag.Arg(0)]
 	if !ok {
 		log.Fatalf("Invalid command %q", flag.Arg(0))
 	}
-	if err := h(ctx, client, flag.Args()[1:]);err!=nil {
+	if err := h(ctx, client, flag.Args()[1:]); err != nil {
 		log.Fatal(err)
 	}
 }
