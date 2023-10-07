@@ -166,9 +166,37 @@ func main() {
 		log.Fatalf("Discover %q: %v", serviceUUID, err)
 	}
 
-	//fmt.Println(bluetooth.CharacteristicUUIDSerialNumberString)
+	// Get serial.
+	serial := ""
+	model := ""
 	for _, s := range servs {
+		chs, err := s.DiscoverCharacteristics(nil)
+		//chs, err := s.DiscoverCharacteristics([]bluetooth.UUID{bluetooth.CharacteristicUUIDSerialNumberString})
+		if err != nil {
+			log.Fatal("Discover serial: ", err)
+		}
+		for _, ch := range chs {
 
+			switch ch.String() {
+			case bluetooth.CharacteristicUUIDModelNumberString.String():
+				t, err := ch2s(ch)
+				if err != nil {
+					log.Error(err)
+				} else {
+					model = t
+				}
+			case bluetooth.CharacteristicUUIDSerialNumberString.String():
+				t, err := ch2s(ch)
+				if err != nil {
+					log.Error(err)
+				} else {
+					serial = t
+				}
+				break
+			}
+		}
+	}
+	for _, s := range servs {
 		// Read all available characteristics data.
 		if false {
 			// TODO:
@@ -269,6 +297,7 @@ func main() {
 				fmt.Printf("VOC: %d\n", voc)
 			} else {
 				type Data struct {
+					Serial      string  `json:"serial"`
 					Humidity    float32 `json:"humidity"`
 					RadonShort  int     `json:"radon_short"`
 					RadonLong   int     `json:"radon_long"`
@@ -278,6 +307,7 @@ func main() {
 					VOC         int     `json:"voc"`
 				}
 				data := Data{
+					Serial:      model + serial,
 					Humidity:    float32(humid) / 2.0,
 					RadonShort:  int(radonShort),
 					RadonLong:   int(radonLong),
@@ -306,4 +336,15 @@ func must(action string, err error) {
 	if err != nil {
 		panic("failed to " + action + ": " + err.Error())
 	}
+}
+func ch2s(ch bluetooth.DeviceCharacteristic) (string, error) {
+	b := make([]byte, 128, 128)
+	n, err := ch.Read(b)
+	if err != nil {
+		return "", err
+	}
+	if n == 0 {
+		return "", fmt.Errorf("serial/model empty string")
+	}
+	return string(b[:n]), nil
 }
