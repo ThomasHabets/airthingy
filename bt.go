@@ -120,7 +120,7 @@ func main() {
 		}
 		d, err := adapter.Connect(addr, bluetooth.ConnectionParams{})
 		if err != nil {
-			log.Fatalf("Connecting: %v", err)
+			log.Fatalf("Connecting to %v: %v", addr, err)
 		}
 		defer func() {
 			if err := d.Disconnect(); err != nil {
